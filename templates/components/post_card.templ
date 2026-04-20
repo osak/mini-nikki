@@ -1,0 +1,20 @@
+package components
+
+import (
+	"fmt"
+	"github.com/osak/mini-nikki/model"
+)
+
+templ PostCard(post model.Post) {
+	<article class="post-card">
+		<div class="post-body">
+			<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
+		</div>
+		<div class="post-meta">
+			<time>{ post.CreatedAt.Format("2006-01-02 15:04") }</time>
+			<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
+				<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+			</form>
+		</div>
+	</article>
+}

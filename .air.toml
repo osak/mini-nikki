@@ -1,0 +1,10 @@
+[build]
+  pre_cmd = ["templ generate"]
+  cmd = "go build -o ./tmp/main ."
+  bin = "./tmp/main"
+  include_ext = ["go", "templ", "css"]
+  exclude_dir = ["tmp"]
+  delay = 300
+
+[log]
+  time = true

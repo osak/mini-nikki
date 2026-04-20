@@ -1,0 +1,23 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/osak/mini-nikki/model"
+)
+
+templ PostPage(post model.Post) {
+	@Layout("投稿詳細 - ミニ日記（ゴママヨ）") {
+		<main>
+			<article class="post-detail">
+				<p class="post-body">{ post.Body }</p>
+				<div class="post-meta">
+					<time>{ post.CreatedAt.Format("2006-01-02 15:04") }</time>
+					<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
+						<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+					</form>
+				</div>
+			</article>
+			<a href="/" class="back-link">← 一覧に戻る</a>
+		</main>
+	}
+}
