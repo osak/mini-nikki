@@ -135,18 +135,60 @@ main {
   padding: 14px 16px;
 }
 
-.post-card .post-body a, .post-detail .post-body a {
-  color: #333;
-  text-decoration: none;
+/* Markdown レンダリング結果 */
+.markdown {
   font-size: 1rem;
-  line-height: 1.6;
-  display: block;
-  white-space: pre-wrap;
+  line-height: 1.7;
   word-break: break-word;
 }
 
-.post-card .post-body a:hover {
+.markdown p {
+  margin: 0 0 0.6em;
+}
+
+.markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown a {
   color: #c0682a;
+}
+
+.markdown ul, .markdown ol {
+  margin: 0 0 0.6em 1.4em;
+}
+
+.markdown code {
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.88em;
+  background: #f4f4f0;
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.markdown pre {
+  background: #f4f4f0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 0 0 0.6em;
+}
+
+.markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown blockquote {
+  border-left: 3px solid #d0d0c8;
+  margin: 0 0 0.6em;
+  padding: 0 0 0 0.8em;
+  color: #888;
+}
+
+.markdown h1, .markdown h2, .markdown h3 {
+  font-weight: bold;
+  margin: 0.4em 0;
 }
 
 .post-meta {

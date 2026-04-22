@@ -43,7 +43,7 @@ templ adminPostGroup(group model.PostGroup) {
 					<hr class="post-divider"/>
 				}
 				<article class="post-card" id={ fmt.Sprintf("post_%d", post.ID) }>
-					<div class="post-body">{ post.Body }</div>
+					<div class="post-body markdown">@templ.Raw(markdownToHTML(post.Body))</div>
 					<div class="post-meta">
 						<time>{ post.CreatedAt.Format("15:04") }</time>
 						<div class="post-actions">
