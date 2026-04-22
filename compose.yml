@@ -1,8 +1,8 @@
 services:
   mini-nikki:
     build: .
-    ports:
-      - "8080:8080"
+    networks:
+      - caddy_services
     volumes:
       - ./config.toml:/app/config.toml:ro
       - data:/data
@@ -10,3 +10,7 @@ services:
 
 volumes:
   data:
+
+networks:
+  caddy_services:
+    external: true
