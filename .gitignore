@@ -1,2 +1,4 @@
+tmp/
 *.db
+config.toml
 .claude/settings.local.json

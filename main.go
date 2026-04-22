@@ -4,8 +4,8 @@ import (
 	"embed"
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/BurntSushi/toml"
 	"github.com/osak/mini-nikki/db"
 	"github.com/osak/mini-nikki/handler"
 	"github.com/osak/mini-nikki/model"
@@ -14,11 +14,20 @@ import (
 //go:embed static
 var staticFS embed.FS
 
+type config struct {
+	Admin struct {
+		User     string `toml:"user"`
+		Password string `toml:"password"`
+	} `toml:"admin"`
+}
+
 func main() {
-	adminUser := os.Getenv("ADMIN_USER")
-	adminPassword := os.Getenv("ADMIN_PASSWORD")
-	if adminUser == "" || adminPassword == "" {
-		log.Fatal("ADMIN_USER and ADMIN_PASSWORD environment variables are required")
+	var cfg config
+	if _, err := toml.DecodeFile("config.toml", &cfg); err != nil {
+		log.Fatalf("failed to load config.toml: %v", err)
+	}
+	if cfg.Admin.User == "" || cfg.Admin.Password == "" {
+		log.Fatal("config.toml: admin.user and admin.password are required")
 	}
 
 	database, err := db.Open("mini-nikki.db")
@@ -29,7 +38,7 @@ func main() {
 
 	postModel := model.NewPostModel(database)
 	postHandler := handler.NewPostHandler(postModel)
-	auth := handler.BasicAuth(adminUser, adminPassword)
+	auth := handler.BasicAuth(cfg.Admin.User, cfg.Admin.Password)
 
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.FileServerFS(staticFS))
