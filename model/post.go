@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 )
 
@@ -59,12 +58,14 @@ func (m *PostModel) List(ctx context.Context) ([]Post, error) {
 }
 
 func (m *PostModel) ListByMonth(ctx context.Context, year, month int) ([]Post, error) {
+	start := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 1, 0)
 	rows, err := m.db.QueryContext(ctx,
 		`SELECT id, body, created_at FROM posts
-		 WHERE strftime('%Y', created_at) = ? AND strftime('%m', created_at) = ?
+		 WHERE created_at >= ? AND created_at < ?
 		 ORDER BY DATE(created_at) DESC, created_at ASC`,
-		fmt.Sprintf("%04d", year),
-		fmt.Sprintf("%02d", month),
+		start.Format("2006-01-02 15:04:05"),
+		end.Format("2006-01-02 15:04:05"),
 	)
 	if err != nil {
 		return nil, err
