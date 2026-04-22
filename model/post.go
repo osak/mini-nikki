@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -41,6 +42,30 @@ func NewPostModel(db *sql.DB) *PostModel {
 func (m *PostModel) List(ctx context.Context) ([]Post, error) {
 	rows, err := m.db.QueryContext(ctx,
 		`SELECT id, body, created_at FROM posts ORDER BY DATE(created_at) DESC, created_at ASC LIMIT 20`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var p Post
+		if err := rows.Scan(&p.ID, &p.Body, &p.CreatedAt); err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+	return posts, rows.Err()
+}
+
+func (m *PostModel) ListByMonth(ctx context.Context, year, month int) ([]Post, error) {
+	rows, err := m.db.QueryContext(ctx,
+		`SELECT id, body, created_at FROM posts
+		 WHERE strftime('%Y', created_at) = ? AND strftime('%m', created_at) = ?
+		 ORDER BY DATE(created_at) DESC, created_at ASC`,
+		fmt.Sprintf("%04d", year),
+		fmt.Sprintf("%02d", month),
+	)
 	if err != nil {
 		return nil, err
 	}

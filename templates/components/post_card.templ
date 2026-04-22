@@ -5,13 +5,22 @@ import (
 	"github.com/osak/mini-nikki/model"
 )
 
+func permalink(post model.Post) string {
+	return fmt.Sprintf("/posts/%d/%02d#post_%d",
+		post.CreatedAt.Year(), post.CreatedAt.Month(), post.ID)
+}
+
 templ PostCard(post model.Post) {
-	<article class="post-card">
-		<div class="post-body">
-			<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
-		</div>
+	<article class="post-card" id={ fmt.Sprintf("post_%d", post.ID) }>
+		<div class="post-body">{ post.Body }</div>
 		<div class="post-meta">
-			<time>{ post.CreatedAt.Format("2006-01-02 15:04") }</time>
+			<time>{ post.CreatedAt.Format("15:04") }</time>
+			<button
+				class="btn-permalink"
+				data-permalink={ permalink(post) }
+				onclick="copyPermalink(this)"
+				title="パーマリンクをコピー"
+			>#</button>
 		</div>
 	</article>
 }

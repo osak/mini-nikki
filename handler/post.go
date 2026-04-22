@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -28,25 +26,24 @@ func (h *PostHandler) Index(w http.ResponseWriter, r *http.Request) {
 	templates.IndexPage(model.GroupByDate(posts)).Render(r.Context(), w)
 }
 
-func (h *PostHandler) Show(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+func (h *PostHandler) Month(w http.ResponseWriter, r *http.Request) {
+	year, err := strconv.Atoi(r.PathValue("year"))
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
-
-	post, err := h.model.Get(r.Context(), id)
-	if errors.Is(err, sql.ErrNoRows) {
+	month, err := strconv.Atoi(r.PathValue("month"))
+	if err != nil || month < 1 || month > 12 {
 		http.NotFound(w, r)
 		return
 	}
+
+	posts, err := h.model.ListByMonth(r.Context(), year, month)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	templates.PostPage(post).Render(r.Context(), w)
+	templates.MonthPage(year, month, model.GroupByDate(posts)).Render(r.Context(), w)
 }
 
 func (h *PostHandler) Admin(w http.ResponseWriter, r *http.Request) {

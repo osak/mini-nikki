@@ -43,7 +43,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.FileServerFS(staticFS))
 	mux.HandleFunc("GET /{$}", postHandler.Index)
-	mux.HandleFunc("GET /posts/{id}", postHandler.Show)
+	mux.HandleFunc("GET /posts/{year}/{month}", postHandler.Month)
 	mux.HandleFunc("GET /admin", auth(postHandler.Admin))
 	mux.HandleFunc("POST /admin/posts", auth(postHandler.Create))
 	mux.HandleFunc("POST /admin/posts/{id}/delete", auth(postHandler.Delete))

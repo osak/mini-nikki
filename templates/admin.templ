@@ -42,15 +42,21 @@ templ adminPostGroup(group model.PostGroup) {
 				if i > 0 {
 					<hr class="post-divider"/>
 				}
-				<article class="post-card">
-					<div class="post-body">
-						<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
-					</div>
+				<article class="post-card" id={ fmt.Sprintf("post_%d", post.ID) }>
+					<div class="post-body">{ post.Body }</div>
 					<div class="post-meta">
 						<time>{ post.CreatedAt.Format("15:04") }</time>
-						<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
-							<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
-						</form>
+						<div class="post-actions">
+							<button
+								class="btn-permalink"
+								data-permalink={ fmt.Sprintf("/posts/%d/%02d#post_%d", post.CreatedAt.Year(), post.CreatedAt.Month(), post.ID) }
+								onclick="copyPermalink(this)"
+								title="パーマリンクをコピー"
+							>#</button>
+							<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
+								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+							</form>
+						</div>
 					</div>
 				</article>
 			}
