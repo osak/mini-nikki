@@ -1,5 +1,5 @@
 CREATE TABLE posts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     body       TEXT    NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );

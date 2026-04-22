@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// JST は UTC+9 固定。time.LoadLocation を避けることで tzdata 依存をなくす。
+// jst は UTC+9 固定。time.LoadLocation を避けることで tzdata 依存をなくす。
 var jst = time.FixedZone("JST", 9*60*60)
 
 type Post struct {
@@ -41,14 +41,17 @@ func NewPostModel(db *sql.DB) *PostModel {
 	return &PostModel{db: db}
 }
 
-// scanCreatedAt はDB内のテキストをJSTとして解釈して time.Time に変換する。
-func scanCreatedAt(s string) (time.Time, error) {
-	return time.ParseInLocation("2006-01-02 15:04:05", s, jst)
+func toJST(epoch int64) time.Time {
+	return time.Unix(epoch, 0).In(jst)
 }
 
 func (m *PostModel) List(ctx context.Context) ([]Post, error) {
+	// JST日付降順、同日内は時刻昇順。
+	// (created_at + 32400) / 86400 で JST の日番号を得る（32400 = 9*3600）。
 	rows, err := m.db.QueryContext(ctx,
-		`SELECT id, body, created_at FROM posts ORDER BY DATE(created_at) DESC, created_at ASC LIMIT 20`)
+		`SELECT id, body, created_at FROM posts
+		 ORDER BY (created_at + 32400) / 86400 DESC, created_at ASC
+		 LIMIT 20`)
 	if err != nil {
 		return nil, err
 	}
@@ -57,13 +60,11 @@ func (m *PostModel) List(ctx context.Context) ([]Post, error) {
 	var posts []Post
 	for rows.Next() {
 		var p Post
-		var createdAt string
-		if err := rows.Scan(&p.ID, &p.Body, &createdAt); err != nil {
+		var epoch int64
+		if err := rows.Scan(&p.ID, &p.Body, &epoch); err != nil {
 			return nil, err
 		}
-		if p.CreatedAt, err = scanCreatedAt(createdAt); err != nil {
-			return nil, err
-		}
+		p.CreatedAt = toJST(epoch)
 		posts = append(posts, p)
 	}
 	return posts, rows.Err()
@@ -75,9 +76,9 @@ func (m *PostModel) ListByMonth(ctx context.Context, year, month int) ([]Post, e
 	rows, err := m.db.QueryContext(ctx,
 		`SELECT id, body, created_at FROM posts
 		 WHERE created_at >= ? AND created_at < ?
-		 ORDER BY DATE(created_at) DESC, created_at ASC`,
-		start.Format("2006-01-02 15:04:05"),
-		end.Format("2006-01-02 15:04:05"),
+		 ORDER BY (created_at + 32400) / 86400 DESC, created_at ASC`,
+		start.Unix(),
+		end.Unix(),
 	)
 	if err != nil {
 		return nil, err
@@ -87,13 +88,11 @@ func (m *PostModel) ListByMonth(ctx context.Context, year, month int) ([]Post, e
 	var posts []Post
 	for rows.Next() {
 		var p Post
-		var createdAt string
-		if err := rows.Scan(&p.ID, &p.Body, &createdAt); err != nil {
+		var epoch int64
+		if err := rows.Scan(&p.ID, &p.Body, &epoch); err != nil {
 			return nil, err
 		}
-		if p.CreatedAt, err = scanCreatedAt(createdAt); err != nil {
-			return nil, err
-		}
+		p.CreatedAt = toJST(epoch)
 		posts = append(posts, p)
 	}
 	return posts, rows.Err()
@@ -101,21 +100,21 @@ func (m *PostModel) ListByMonth(ctx context.Context, year, month int) ([]Post, e
 
 func (m *PostModel) Get(ctx context.Context, id int64) (Post, error) {
 	var p Post
-	var createdAt string
+	var epoch int64
 	err := m.db.QueryRowContext(ctx,
 		`SELECT id, body, created_at FROM posts WHERE id = ?`, id).
-		Scan(&p.ID, &p.Body, &createdAt)
+		Scan(&p.ID, &p.Body, &epoch)
 	if err != nil {
 		return Post{}, err
 	}
-	p.CreatedAt, err = scanCreatedAt(createdAt)
+	p.CreatedAt = toJST(epoch)
 	return p, err
 }
 
 func (m *PostModel) Create(ctx context.Context, body string) (int64, error) {
-	now := time.Now().In(jst).Format("2006-01-02 15:04:05")
 	res, err := m.db.ExecContext(ctx,
-		`INSERT INTO posts (body, created_at) VALUES (?, ?)`, body, now)
+		`INSERT INTO posts (body, created_at) VALUES (?, ?)`,
+		body, time.Now().Unix())
 	if err != nil {
 		return 0, err
 	}
