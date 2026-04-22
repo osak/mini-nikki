@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -17,10 +18,15 @@ func NewPostHandler(m *model.PostModel) *PostHandler {
 	return &PostHandler{model: m}
 }
 
+func internalError(w http.ResponseWriter, r *http.Request, err error) {
+	slog.ErrorContext(r.Context(), "internal server error", "err", err)
+	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+}
+
 func (h *PostHandler) Index(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.model.List(r.Context())
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	templates.IndexPage(model.GroupByDate(posts)).Render(r.Context(), w)
@@ -40,7 +46,7 @@ func (h *PostHandler) Month(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := h.model.ListByMonth(r.Context(), year, month)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	templates.MonthPage(year, month, model.GroupByDate(posts)).Render(r.Context(), w)
@@ -49,7 +55,7 @@ func (h *PostHandler) Month(w http.ResponseWriter, r *http.Request) {
 func (h *PostHandler) Admin(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.model.List(r.Context())
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 	templates.AdminPage(model.GroupByDate(posts), "").Render(r.Context(), w)
@@ -71,7 +77,7 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := h.model.Create(r.Context(), body); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
@@ -87,7 +93,7 @@ func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.model.Delete(r.Context(), id); err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		internalError(w, r, err)
 		return
 	}
 
