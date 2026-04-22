@@ -87,11 +87,41 @@ main {
   font-size: 0.9rem;
 }
 
-/* Post list */
-.post-list {
+/* Post groups */
+.post-groups {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
+}
+
+.post-group {
+  margin-bottom: 8px;
+}
+
+.group-date {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #888;
+  padding: 6px 0 8px;
+  border-bottom: 2px solid #c8c8c0;
+  margin-bottom: 0;
+  letter-spacing: 0.03em;
+}
+
+.post-group-body {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+/* 投稿間の破線区切り */
+.post-divider {
+  border: none;
+  border-top: 1px dashed #d8d8d0;
+  margin: 0 16px;
 }
 
 .empty {
@@ -102,14 +132,10 @@ main {
 
 /* Post card */
 .post-card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
   padding: 14px 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
-.post-card .post-body a {
+.post-card .post-body a, .post-detail .post-body a {
   color: #333;
   text-decoration: none;
   font-size: 1rem;

@@ -12,6 +12,24 @@ type Post struct {
 	CreatedAt time.Time
 }
 
+type PostGroup struct {
+	Date  time.Time
+	Posts []Post
+}
+
+func GroupByDate(posts []Post) []PostGroup {
+	var groups []PostGroup
+	for _, p := range posts {
+		// UTC日付でグループ化
+		date := p.CreatedAt.Truncate(24 * time.Hour)
+		if len(groups) == 0 || !groups[len(groups)-1].Date.Equal(date) {
+			groups = append(groups, PostGroup{Date: date})
+		}
+		groups[len(groups)-1].Posts = append(groups[len(groups)-1].Posts, p)
+	}
+	return groups
+}
+
 type PostModel struct {
 	db *sql.DB
 }
@@ -22,7 +40,7 @@ func NewPostModel(db *sql.DB) *PostModel {
 
 func (m *PostModel) List(ctx context.Context) ([]Post, error) {
 	rows, err := m.db.QueryContext(ctx,
-		`SELECT id, body, created_at FROM posts ORDER BY created_at DESC LIMIT 20`)
+		`SELECT id, body, created_at FROM posts ORDER BY DATE(created_at) DESC, created_at ASC LIMIT 20`)
 	if err != nil {
 		return nil, err
 	}

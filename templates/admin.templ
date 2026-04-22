@@ -5,7 +5,7 @@ import (
 	"github.com/osak/mini-nikki/model"
 )
 
-templ AdminPage(posts []model.Post, errMsg string) {
+templ AdminPage(groups []model.PostGroup, errMsg string) {
 	@Layout("管理画面 - ミニ日記（ゴママヨ）") {
 		<main>
 			<section class="post-form">
@@ -17,24 +17,45 @@ templ AdminPage(posts []model.Post, errMsg string) {
 					<button type="submit" class="btn-submit">投稿</button>
 				</form>
 			</section>
-			<section class="post-list">
-				for _, post := range posts {
-					<article class="post-card">
-						<div class="post-body">
-							<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
-						</div>
-						<div class="post-meta">
-							<time>{ post.CreatedAt.Format("2006-01-02 15:04") }</time>
-							<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
-								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
-							</form>
-						</div>
-					</article>
+			<div class="post-groups">
+				for _, group := range groups {
+					@adminPostGroup(group)
 				}
-				if len(posts) == 0 {
+				if len(groups) == 0 {
 					<p class="empty">まだ投稿がありません。</p>
 				}
-			</section>
+			</div>
 		</main>
 	}
 }
+
+templ adminPostGroup(group model.PostGroup) {
+	<section class="post-group">
+		<h2 class="group-date">{ fmt.Sprintf("%d年%d月%d日（%s）",
+			group.Date.Year(),
+			int(group.Date.Month()),
+			group.Date.Day(),
+			adminWeekdays[group.Date.Weekday()],
+		) }</h2>
+		<div class="post-group-body">
+			for i, post := range group.Posts {
+				if i > 0 {
+					<hr class="post-divider"/>
+				}
+				<article class="post-card">
+					<div class="post-body">
+						<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
+					</div>
+					<div class="post-meta">
+						<time>{ post.CreatedAt.Format("15:04") }</time>
+						<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
+							<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+						</form>
+					</div>
+				</article>
+			}
+		</div>
+	</section>
+}
+
+var adminWeekdays = [...]string{"日", "月", "火", "水", "木", "金", "土"}

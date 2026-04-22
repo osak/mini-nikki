@@ -5,17 +5,17 @@ import (
 	"github.com/osak/mini-nikki/templates/components"
 )
 
-templ IndexPage(posts []model.Post) {
+templ IndexPage(groups []model.PostGroup) {
 	@Layout("ミニ日記（ゴママヨ）") {
 		<main>
-			<section class="post-list">
-				for _, post := range posts {
-					@components.PostCard(post)
+			<div class="post-groups">
+				for _, group := range groups {
+					@components.PostGroup(group)
 				}
-				if len(posts) == 0 {
+				if len(groups) == 0 {
 					<p class="empty">まだ投稿がありません。</p>
 				}
-			</section>
+			</div>
 		</main>
 	}
 }

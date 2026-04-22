@@ -1,0 +1,27 @@
+package components
+
+import (
+	"fmt"
+	"github.com/osak/mini-nikki/model"
+)
+
+var weekdaysJP = [...]string{"日", "月", "火", "水", "木", "金", "土"}
+
+templ PostGroup(group model.PostGroup) {
+	<section class="post-group">
+		<h2 class="group-date">{ fmt.Sprintf("%d年%d月%d日（%s）",
+			group.Date.Year(),
+			int(group.Date.Month()),
+			group.Date.Day(),
+			weekdaysJP[group.Date.Weekday()],
+		) }</h2>
+		<div class="post-group-body">
+			for i, post := range group.Posts {
+				if i > 0 {
+					<hr class="post-divider"/>
+				}
+				@PostCard(post)
+			}
+		</div>
+	</section>
+}
