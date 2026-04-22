@@ -1,0 +1,40 @@
+package templates
+
+import (
+	"fmt"
+	"github.com/osak/mini-nikki/model"
+)
+
+templ AdminPage(posts []model.Post, errMsg string) {
+	@Layout("管理画面 - ミニ日記（ゴママヨ）") {
+		<main>
+			<section class="post-form">
+				<form method="POST" action="/admin/posts">
+					if errMsg != "" {
+						<p class="error">{ errMsg }</p>
+					}
+					<textarea name="body" placeholder="いまどうしてる？" maxlength="280" required></textarea>
+					<button type="submit" class="btn-submit">投稿</button>
+				</form>
+			</section>
+			<section class="post-list">
+				for _, post := range posts {
+					<article class="post-card">
+						<div class="post-body">
+							<a href={ templ.SafeURL(fmt.Sprintf("/posts/%d", post.ID)) }>{ post.Body }</a>
+						</div>
+						<div class="post-meta">
+							<time>{ post.CreatedAt.Format("2006-01-02 15:04") }</time>
+							<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
+								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+							</form>
+						</div>
+					</article>
+				}
+				if len(posts) == 0 {
+					<p class="empty">まだ投稿がありません。</p>
+				}
+			</section>
+		</main>
+	}
+}

@@ -25,7 +25,7 @@ func (h *PostHandler) Index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-	templates.IndexPage(posts, "").Render(r.Context(), w)
+	templates.IndexPage(posts).Render(r.Context(), w)
 }
 
 func (h *PostHandler) Show(w http.ResponseWriter, r *http.Request) {
@@ -49,18 +49,27 @@ func (h *PostHandler) Show(w http.ResponseWriter, r *http.Request) {
 	templates.PostPage(post).Render(r.Context(), w)
 }
 
+func (h *PostHandler) Admin(w http.ResponseWriter, r *http.Request) {
+	posts, err := h.model.List(r.Context())
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	templates.AdminPage(posts, "").Render(r.Context(), w)
+}
+
 func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	body := strings.TrimSpace(r.FormValue("body"))
 
 	if body == "" {
 		posts, _ := h.model.List(r.Context())
-		templates.IndexPage(posts, "本文を入力してください").Render(r.Context(), w)
+		templates.AdminPage(posts, "本文を入力してください").Render(r.Context(), w)
 		return
 	}
 
 	if len([]rune(body)) > 280 {
 		posts, _ := h.model.List(r.Context())
-		templates.IndexPage(posts, "本文は280文字以内で入力してください").Render(r.Context(), w)
+		templates.AdminPage(posts, "本文は280文字以内で入力してください").Render(r.Context(), w)
 		return
 	}
 
@@ -69,7 +78,7 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
 func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
@@ -85,5 +94,5 @@ func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }

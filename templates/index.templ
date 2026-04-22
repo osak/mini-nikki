@@ -5,10 +5,9 @@ import (
 	"github.com/osak/mini-nikki/templates/components"
 )
 
-templ IndexPage(posts []model.Post, errMsg string) {
+templ IndexPage(posts []model.Post) {
 	@Layout("ミニ日記（ゴママヨ）") {
 		<main>
-			@PostForm(errMsg)
 			<section class="post-list">
 				for _, post := range posts {
 					@components.PostCard(post)
@@ -19,16 +18,4 @@ templ IndexPage(posts []model.Post, errMsg string) {
 			</section>
 		</main>
 	}
-}
-
-templ PostForm(errMsg string) {
-	<section class="post-form">
-		<form method="POST" action="/admin/posts">
-			if errMsg != "" {
-				<p class="error">{ errMsg }</p>
-			}
-			<textarea name="body" placeholder="いまどうしてる？" maxlength="280" required></textarea>
-			<button type="submit" class="btn-submit">投稿</button>
-		</form>
-	</section>
 }
