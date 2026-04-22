@@ -9,21 +9,11 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"bytes"
 	"fmt"
-	"html"
 
+	"github.com/osak/mini-nikki/internal/markdown"
 	"github.com/osak/mini-nikki/model"
-	"github.com/yuin/goldmark"
 )
-
-func markdownToHTML(src string) string {
-	var buf bytes.Buffer
-	if err := goldmark.Convert([]byte(src), &buf); err != nil {
-		return html.EscapeString(src)
-	}
-	return buf.String()
-}
 
 func permalink(post model.Post) string {
 	return fmt.Sprintf("/posts/%d/%02d#post_%d",
@@ -58,7 +48,7 @@ func PostCard(post model.Post) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("post_%d", post.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 26, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 16, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -68,7 +58,7 @@ func PostCard(post model.Post) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templ.Raw(markdownToHTML(post.Body)).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templ.Raw(markdown.ToHTML(post.Body)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,7 +69,7 @@ func PostCard(post model.Post) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(post.CreatedAt.Format("15:04"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 29, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 19, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -92,7 +82,7 @@ func PostCard(post model.Post) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(permalink(post))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 32, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/post_card.templ`, Line: 22, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {

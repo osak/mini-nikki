@@ -1,11 +1,9 @@
 package templates
 
 import (
-	"bytes"
-	"html"
 	"time"
 
-	"github.com/yuin/goldmark"
+	"github.com/osak/mini-nikki/internal/markdown"
 )
 
 var weekdays = [...]string{"日", "月", "火", "水", "木", "金", "土"}
@@ -15,9 +13,5 @@ func formatDate(t time.Time) string {
 }
 
 func markdownToHTML(src string) string {
-	var buf bytes.Buffer
-	if err := goldmark.Convert([]byte(src), &buf); err != nil {
-		return html.EscapeString(src)
-	}
-	return buf.String()
+	return markdown.ToHTML(src)
 }
