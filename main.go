@@ -19,6 +19,9 @@ type config struct {
 		User     string `toml:"user"`
 		Password string `toml:"password"`
 	} `toml:"admin"`
+	DB struct {
+		Path string `toml:"path"`
+	} `toml:"db"`
 }
 
 func main() {
@@ -30,7 +33,11 @@ func main() {
 		log.Fatal("config.toml: admin.user and admin.password are required")
 	}
 
-	database, err := db.Open("mini-nikki.db")
+	dbPath := cfg.DB.Path
+	if dbPath == "" {
+		dbPath = "mini-nikki.db"
+	}
+	database, err := db.Open(dbPath)
 	if err != nil {
 		log.Fatalf("failed to open db: %v", err)
 	}

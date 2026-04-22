@@ -1,3 +1,7 @@
 [admin]
 user     = "admin"
 password = "changeme"
+
+[db]
+# compose で動かす場合は /data/mini-nikki.db を推奨
+path = "mini-nikki.db"
