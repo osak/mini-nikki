@@ -2,6 +2,8 @@ package templates
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/osak/mini-nikki/model"
 )
 
@@ -47,6 +49,7 @@ templ adminPostGroup(group model.PostGroup) {
 					<div class="post-meta">
 						<time>{ post.CreatedAt.Format("15:04") }</time>
 						<div class="post-actions">
+							<span class="like-count" title="いいね数">♥ { strconv.FormatInt(post.LikeCount, 10) }</span>
 							<button
 								class="btn-permalink"
 								data-permalink={ fmt.Sprintf("/posts/%d/%02d#post_%d", post.CreatedAt.Year(), post.CreatedAt.Month(), post.ID) }

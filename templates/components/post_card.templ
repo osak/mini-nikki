@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/osak/mini-nikki/internal/markdown"
 	"github.com/osak/mini-nikki/model"
@@ -17,12 +18,28 @@ templ PostCard(post model.Post) {
 		<div class="post-body markdown">@templ.Raw(markdown.ToHTML(post.Body))</div>
 		<div class="post-meta">
 			<time>{ post.CreatedAt.Format("15:04") }</time>
-			<button
-				class="btn-permalink"
-				data-permalink={ permalink(post) }
-				onclick="copyPermalink(this)"
-				title="パーマリンクをコピー"
-			>#</button>
+			<div class="post-actions">
+				<button
+					class={ "btn-like", templ.KV("liked", post.HasLiked) }
+					data-post-id={ strconv.FormatInt(post.ID, 10) }
+					data-liked={ strconv.FormatBool(post.HasLiked) }
+					onclick="toggleLike(this)"
+					title="いいね"
+				>
+					if post.HasLiked {
+						♥
+					} else {
+						♡
+					}
+					{ " " }{ strconv.FormatInt(post.LikeCount, 10) }
+				</button>
+				<button
+					class="btn-permalink"
+					data-permalink={ permalink(post) }
+					onclick="copyPermalink(this)"
+					title="パーマリンクをコピー"
+				>#</button>
+			</div>
 		</div>
 	</article>
 }

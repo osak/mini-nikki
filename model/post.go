@@ -13,6 +13,8 @@ type Post struct {
 	ID        int64
 	Body      string
 	CreatedAt time.Time
+	LikeCount int64
+	HasLiked  bool
 }
 
 type PostGroup struct {

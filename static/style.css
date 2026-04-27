@@ -213,6 +213,34 @@ main {
   gap: 6px;
 }
 
+.btn-like {
+  background: none;
+  border: 1px solid #e0d0c0;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-like:hover {
+  border-color: #e08060;
+  color: #e08060;
+  background: #fff5f0;
+}
+
+.btn-like.liked {
+  color: #c0392b;
+  border-color: #e08060;
+  background: #fff5f0;
+}
+
+.like-count {
+  font-size: 0.8rem;
+  color: #c0392b;
+}
+
 .btn-permalink {
   background: none;
   border: none;

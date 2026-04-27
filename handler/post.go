@@ -11,11 +11,12 @@ import (
 )
 
 type PostHandler struct {
-	model *model.PostModel
+	model     *model.PostModel
+	likeModel *model.LikeModel
 }
 
-func NewPostHandler(m *model.PostModel) *PostHandler {
-	return &PostHandler{model: m}
+func NewPostHandler(m *model.PostModel, lm *model.LikeModel) *PostHandler {
+	return &PostHandler{model: m, likeModel: lm}
 }
 
 func internalError(w http.ResponseWriter, r *http.Request, err error) {
@@ -26,6 +27,10 @@ func internalError(w http.ResponseWriter, r *http.Request, err error) {
 func (h *PostHandler) Index(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.model.List(r.Context())
 	if err != nil {
+		internalError(w, r, err)
+		return
+	}
+	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
 		internalError(w, r, err)
 		return
 	}
@@ -49,12 +54,20 @@ func (h *PostHandler) Month(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
+	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
+		internalError(w, r, err)
+		return
+	}
 	templates.MonthPage(year, month, model.GroupByDate(posts)).Render(r.Context(), w)
 }
 
 func (h *PostHandler) Admin(w http.ResponseWriter, r *http.Request) {
 	posts, err := h.model.List(r.Context())
 	if err != nil {
+		internalError(w, r, err)
+		return
+	}
+	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
 		internalError(w, r, err)
 		return
 	}
