@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/xml"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -52,6 +54,36 @@ func latestPostTime(posts []model.Post) time.Time {
 		}
 	}
 	return t
+}
+
+// encodeFeed encodes v as XML into a buffer and returns the result.
+// The XML declaration is prepended. If encoding fails (logic bug in v),
+// the error is returned before any bytes are written to the response.
+func encodeFeed(v any) ([]byte, error) {
+	var buf bytes.Buffer
+	buf.WriteString(xml.Header)
+	enc := xml.NewEncoder(&buf)
+	enc.Indent("", "  ")
+	if err := enc.Encode(v); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// writeFeed encodes v and writes it to w with the given Content-Type.
+// Encoding errors are returned as HTTP 500 before any bytes reach the client.
+// Write errors after headers are sent indicate a dropped connection; those are
+// logged and otherwise ignored since the response cannot be changed at that point.
+func writeFeed(w http.ResponseWriter, r *http.Request, contentType string, v any) {
+	body, err := encodeFeed(v)
+	if err != nil {
+		internalError(w, r, err)
+		return
+	}
+	w.Header().Set("Content-Type", contentType)
+	if _, err := w.Write(body); err != nil {
+		slog.ErrorContext(r.Context(), "feed write error", "err", err)
+	}
 }
 
 // ---- RSS 2.0 ---------------------------------------------------------------
@@ -119,11 +151,7 @@ func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/rss+xml; charset=utf-8")
-	w.Write([]byte(xml.Header)) //nolint:errcheck
-	enc := xml.NewEncoder(w)
-	enc.Indent("", "  ")
-	enc.Encode(feed) //nolint:errcheck
+	writeFeed(w, r, "application/rss+xml; charset=utf-8", feed)
 }
 
 // ---- Atom 1.0 --------------------------------------------------------------
@@ -196,9 +224,5 @@ func (h *FeedHandler) Atom(w http.ResponseWriter, r *http.Request) {
 		Entries: entries,
 	}
 
-	w.Header().Set("Content-Type", "application/atom+xml; charset=utf-8")
-	w.Write([]byte(xml.Header)) //nolint:errcheck
-	enc := xml.NewEncoder(w)
-	enc.Indent("", "  ")
-	enc.Encode(feed) //nolint:errcheck
+	writeFeed(w, r, "application/atom+xml; charset=utf-8", feed)
 }
