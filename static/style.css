@@ -1,333 +1,347 @@
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
-  background: #fafaf8;
-  color: #333;
-  min-height: 100vh;
+    font-family:
+        "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+    background: #fafaf8;
+    color: #333;
+    min-height: 100vh;
 }
 
 header {
-  background: #fff;
-  border-bottom: 2px solid #f0c040;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+    background: #fff;
+    border-bottom: 2px solid #f0c040;
+    padding: 12px 24px;
+}
+
+.header-contents {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
 }
 
 .header-links {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .feed-link {
-  font-size: 0.75rem;
-  color: #aaa;
-  text-decoration: none;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 1px 6px;
+    font-size: 0.75rem;
+    color: #aaa;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1px 6px;
 }
 
 .feed-link:hover {
-  color: #c0682a;
-  border-color: #c0682a;
+    color: #c0682a;
+    border-color: #c0682a;
 }
 
 .site-title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  color: #c0682a;
-  text-decoration: none;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #c0682a;
+    text-decoration: none;
 }
 
 .site-title:hover {
-  opacity: 0.8;
+    opacity: 0.8;
 }
 
 main {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 24px 16px;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px;
 }
 
 /* Post form */
 .post-form {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .post-form form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .post-form textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  resize: vertical;
-  font-family: inherit;
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+    resize: vertical;
+    font-family: inherit;
 }
 
 .post-form textarea:focus {
-  outline: none;
-  border-color: #f0c040;
+    outline: none;
+    border-color: #f0c040;
 }
 
 .btn-submit {
-  align-self: flex-end;
-  padding: 8px 20px;
-  background: #f0c040;
-  color: #333;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: bold;
-  cursor: pointer;
+    align-self: flex-end;
+    padding: 8px 20px;
+    background: #f0c040;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
 }
 
 .btn-submit:hover {
-  background: #e0b030;
+    background: #e0b030;
 }
 
 .error {
-  color: #c0392b;
-  font-size: 0.9rem;
+    color: #c0392b;
+    font-size: 0.9rem;
 }
 
 /* Post groups */
 .post-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .post-group {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 .group-date {
-  font-size: 0.95rem;
-  font-weight: bold;
-  color: #888;
-  padding: 6px 0 8px;
-  border-bottom: 2px solid #c8c8c0;
-  margin-bottom: 0;
-  letter-spacing: 0.03em;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #888;
+    padding: 6px 0 8px;
+    border-bottom: 2px solid #c8c8c0;
+    margin-bottom: 0;
+    letter-spacing: 0.03em;
 }
 
 .post-group-body {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  overflow: hidden;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
 }
 
 /* 投稿間の破線区切り */
 .post-divider {
-  border: none;
-  border-top: 1px dashed #d8d8d0;
-  margin: 0 16px;
+    border: none;
+    border-top: 1px dashed #d8d8d0;
+    margin: 0 16px;
 }
 
 .empty {
-  color: #999;
-  text-align: center;
-  padding: 32px 0;
+    color: #999;
+    text-align: center;
+    padding: 32px 0;
 }
 
 /* Post card */
 .post-card {
-  padding: 14px 16px;
+    padding: 14px 16px;
 }
 
 /* Markdown レンダリング結果 */
 .markdown {
-  font-size: 1rem;
-  line-height: 1.7;
-  word-break: break-word;
+    font-size: 1rem;
+    line-height: 1.7;
+    word-break: break-word;
 }
 
 .markdown p {
-  margin: 0 0 0.6em;
+    margin: 0 0 0.6em;
 }
 
 .markdown p:last-child {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .markdown a {
-  color: #c0682a;
+    color: #c0682a;
 }
 
-.markdown ul, .markdown ol {
-  margin: 0 0 0.6em 1.4em;
+.markdown ul,
+.markdown ol {
+    margin: 0 0 0.6em 1.4em;
 }
 
 .markdown code {
-  font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 0.88em;
-  background: #f4f4f0;
-  padding: 0.1em 0.35em;
-  border-radius: 3px;
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 0.88em;
+    background: #f4f4f0;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
 }
 
 .markdown pre {
-  background: #f4f4f0;
-  padding: 10px 12px;
-  border-radius: 6px;
-  overflow-x: auto;
-  margin: 0 0 0.6em;
+    background: #f4f4f0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 0 0 0.6em;
 }
 
 .markdown pre code {
-  background: none;
-  padding: 0;
+    background: none;
+    padding: 0;
 }
 
 .markdown blockquote {
-  border-left: 3px solid #d0d0c8;
-  margin: 0 0 0.6em;
-  padding: 0 0 0 0.8em;
-  color: #888;
+    border-left: 3px solid #d0d0c8;
+    margin: 0 0 0.6em;
+    padding: 0 0 0 0.8em;
+    color: #888;
 }
 
-.markdown h1, .markdown h2, .markdown h3 {
-  font-weight: bold;
-  margin: 0.4em 0;
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+    font-weight: bold;
+    margin: 0.4em 0;
 }
 
 .post-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
 }
 
 .post-meta time {
-  font-size: 0.8rem;
-  color: #999;
+    font-size: 0.8rem;
+    color: #999;
 }
 
 .inline {
-  display: inline;
+    display: inline;
 }
 
 .post-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .btn-like {
-  background: none;
-  border: 1px solid #e0d0c0;
-  border-radius: 12px;
-  padding: 2px 10px;
-  font-size: 0.8rem;
-  color: #bbb;
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+    background: none;
+    border: 1px solid #e0d0c0;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    color: #bbb;
+    cursor: pointer;
+    transition:
+        color 0.15s,
+        border-color 0.15s,
+        background 0.15s;
 }
 
 .btn-like:hover {
-  border-color: #e08060;
-  color: #e08060;
-  background: #fff5f0;
+    border-color: #e08060;
+    color: #e08060;
+    background: #fff5f0;
 }
 
 .btn-like.liked {
-  color: #c0392b;
-  border-color: #e08060;
-  background: #fff5f0;
+    color: #c0392b;
+    border-color: #e08060;
+    background: #fff5f0;
 }
 
 .like-count {
-  font-size: 0.8rem;
-  color: #c0392b;
+    font-size: 0.8rem;
+    color: #c0392b;
 }
 
 .btn-permalink {
-  background: none;
-  border: none;
-  padding: 2px 6px;
-  font-size: 0.8rem;
-  color: #bbb;
-  cursor: pointer;
-  font-family: monospace;
-  border-radius: 4px;
+    background: none;
+    border: none;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+    color: #bbb;
+    cursor: pointer;
+    font-family: monospace;
+    border-radius: 4px;
 }
 
 .btn-permalink:hover {
-  background: #f0f0e8;
-  color: #666;
+    background: #f0f0e8;
+    color: #666;
 }
 
 .btn-delete {
-  background: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 2px 10px;
-  font-size: 0.8rem;
-  color: #999;
-  cursor: pointer;
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    color: #999;
+    cursor: pointer;
 }
 
 .btn-delete:hover {
-  background: #fee;
-  border-color: #c0392b;
-  color: #c0392b;
+    background: #fee;
+    border-color: #c0392b;
+    color: #c0392b;
 }
 
 /* Post detail */
 .post-detail {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .post-detail .post-body {
-  font-size: 1.05rem;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin-bottom: 16px;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 16px;
 }
 
 .month-heading {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #555;
-  margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 20px;
 }
 
 .back-link {
-  color: #c0682a;
-  text-decoration: none;
-  font-size: 0.9rem;
+    color: #c0682a;
+    text-decoration: none;
+    font-size: 0.9rem;
 }
 
 .back-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }

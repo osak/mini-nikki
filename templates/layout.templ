@@ -14,12 +14,14 @@ templ Layout(title string) {
 		</head>
 		<body>
 			<header>
-				<a href="/" class="site-title">ミニ日記（ゴママヨ）</a>
-				<nav class="header-links">
-					<a href="https://osak.jp">osak.jp</a>
-					<a href="/feed.rss" class="feed-link" title="RSS">RSS</a>
-					<a href="/feed.atom" class="feed-link" title="Atom">Atom</a>
-				</nav>
+				<div class="header-contents">
+					<a href="/" class="site-title">ミニ日記（ゴママヨ）</a>
+					<nav class="header-links">
+						<a href="https://osak.jp">osak.jp</a>
+						<a href="/feed.rss" class="feed-link" title="RSS">RSS</a>
+						<a href="/feed.atom" class="feed-link" title="Atom">Atom</a>
+					</nav>
+				</div>
 			</header>
 			{ children... }
 		</body>
