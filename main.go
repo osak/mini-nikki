@@ -47,6 +47,7 @@ func main() {
 	likeModel := model.NewLikeModel(database)
 	postHandler := handler.NewPostHandler(postModel, likeModel)
 	likeHandler := handler.NewLikeHandler(likeModel)
+	feedHandler := handler.NewFeedHandler(postModel)
 	auth := handler.BasicAuth(cfg.Admin.User, cfg.Admin.Password)
 
 	mux := http.NewServeMux()
@@ -54,6 +55,8 @@ func main() {
 	mux.HandleFunc("GET /{$}", postHandler.Index)
 	mux.HandleFunc("GET /posts/{year}/{month}", postHandler.Month)
 	mux.HandleFunc("POST /posts/{id}/like", likeHandler.Like)
+	mux.HandleFunc("GET /feed.rss", feedHandler.RSS)
+	mux.HandleFunc("GET /feed.atom", feedHandler.Atom)
 	mux.HandleFunc("GET /admin", auth(postHandler.Admin))
 	mux.HandleFunc("POST /admin/posts", auth(postHandler.Create))
 	mux.HandleFunc("POST /admin/posts/{id}/delete", auth(postHandler.Delete))

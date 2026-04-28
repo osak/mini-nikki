@@ -7,6 +7,8 @@
 | GET | `/` | 投稿一覧（直近 20 件） | 不要 |
 | GET | `/posts/{year}/{month}` | 月別アーカイブ | 不要 |
 | POST | `/posts/{id}/like` | Like 追加（JSON API） | 不要 |
+| GET | `/feed.rss` | RSS 2.0 フィード（直近 20 件） | 不要 |
+| GET | `/feed.atom` | Atom 1.0 フィード（直近 20 件） | 不要 |
 | GET | `/admin` | 管理画面 | Basic 認証 |
 | POST | `/admin/posts` | 投稿作成 | Basic 認証 |
 | POST | `/admin/posts/{id}/delete` | 投稿削除 | Basic 認証 |
