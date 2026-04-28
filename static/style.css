@@ -15,6 +15,30 @@ header {
   background: #fff;
   border-bottom: 2px solid #f0c040;
   padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-link {
+  font-size: 0.75rem;
+  color: #aaa;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+.feed-link:hover {
+  color: #c0682a;
+  border-color: #c0682a;
 }
 
 .site-title {
