@@ -71,7 +71,7 @@ func AdminPage(groups []model.PostGroup, errMsg string) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<textarea name=\"body\" placeholder=\"いまどうしてる？\" maxlength=\"280\" required></textarea> <button type=\"submit\" class=\"btn-submit\">投稿</button></form></section><div class=\"post-groups\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<textarea name=\"body\" placeholder=\"いまどうしてる？\" required></textarea> <button type=\"submit\" class=\"btn-submit\">投稿</button></form></section><div class=\"post-groups\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

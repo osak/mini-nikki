@@ -83,12 +83,6 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len([]rune(body)) > 280 {
-		posts, _ := h.model.List(r.Context())
-		templates.AdminPage(model.GroupByDate(posts), "本文は280文字以内で入力してください").Render(r.Context(), w)
-		return
-	}
-
 	if _, err := h.model.Create(r.Context(), body); err != nil {
 		internalError(w, r, err)
 		return

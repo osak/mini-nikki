@@ -15,7 +15,7 @@ templ AdminPage(groups []model.PostGroup, errMsg string) {
 					if errMsg != "" {
 						<p class="error">{ errMsg }</p>
 					}
-					<textarea name="body" placeholder="いまどうしてる？" maxlength="280" required></textarea>
+					<textarea name="body" placeholder="いまどうしてる？" required></textarea>
 					<button type="submit" class="btn-submit">投稿</button>
 				</form>
 			</section>
