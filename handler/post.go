@@ -91,6 +91,50 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
+func (h *PostHandler) EditForm(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	post, err := h.model.Get(r.Context(), id)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	templates.EditPage(post, "").Render(r.Context(), w)
+}
+
+func (h *PostHandler) Update(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	body := strings.TrimSpace(r.FormValue("body"))
+	if body == "" {
+		post, err := h.model.Get(r.Context(), id)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		templates.EditPage(post, "本文を入力してください").Render(r.Context(), w)
+		return
+	}
+
+	if err := h.model.Update(r.Context(), id, body); err != nil {
+		internalError(w, r, err)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
 func (h *PostHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)

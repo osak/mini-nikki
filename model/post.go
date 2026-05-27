@@ -123,6 +123,12 @@ func (m *PostModel) Create(ctx context.Context, body string) (int64, error) {
 	return res.LastInsertId()
 }
 
+func (m *PostModel) Update(ctx context.Context, id int64, body string) error {
+	_, err := m.db.ExecContext(ctx,
+		`UPDATE posts SET body = ? WHERE id = ?`, body, id)
+	return err
+}
+
 func (m *PostModel) Delete(ctx context.Context, id int64) error {
 	_, err := m.db.ExecContext(ctx,
 		`DELETE FROM posts WHERE id = ?`, id)

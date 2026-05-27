@@ -56,6 +56,7 @@ templ adminPostGroup(group model.PostGroup) {
 								onclick="copyPermalink(this)"
 								title="パーマリンクをコピー"
 							>#</button>
+							<a href={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/edit", post.ID)) } class="btn-edit">編集</a>
 							<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/delete", post.ID)) } class="inline">
 								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
 							</form>

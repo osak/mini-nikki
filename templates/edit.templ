@@ -1,0 +1,27 @@
+package templates
+
+import (
+	"fmt"
+
+	"github.com/osak/mini-nikki/model"
+)
+
+templ EditPage(post model.Post, errMsg string) {
+	@Layout("投稿を編集 - ミニ日記（ゴママヨ）") {
+		<main>
+			<h1 class="edit-heading">投稿を編集</h1>
+			<section class="post-form">
+				<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/admin/posts/%d/edit", post.ID)) }>
+					if errMsg != "" {
+						<p class="error">{ errMsg }</p>
+					}
+					<textarea name="body" required>{ post.Body }</textarea>
+					<div class="edit-actions">
+						<a href="/admin" class="btn-cancel">キャンセル</a>
+						<button type="submit" class="btn-submit">保存</button>
+					</div>
+				</form>
+			</section>
+		</main>
+	}
+}

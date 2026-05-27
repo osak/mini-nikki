@@ -295,6 +295,25 @@ main {
     color: #666;
 }
 
+.btn-edit {
+    display: inline-block;
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    color: #999;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.6;
+}
+
+.btn-edit:hover {
+    background: #f0f8ff;
+    border-color: #5a9fd4;
+    color: #2b6cb0;
+}
+
 .btn-delete {
     background: none;
     border: 1px solid #ccc;
@@ -309,6 +328,32 @@ main {
     background: #fee;
     border-color: #c0392b;
     color: #c0392b;
+}
+
+/* Edit page */
+.edit-heading {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 16px;
+}
+
+.edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-cancel {
+    font-size: 0.95rem;
+    color: #888;
+    text-decoration: none;
+}
+
+.btn-cancel:hover {
+    color: #555;
+    text-decoration: underline;
 }
 
 /* Post detail */

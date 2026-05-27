@@ -59,6 +59,8 @@ func main() {
 	mux.HandleFunc("GET /feed.atom", feedHandler.Atom)
 	mux.HandleFunc("GET /admin", auth(postHandler.Admin))
 	mux.HandleFunc("POST /admin/posts", auth(postHandler.Create))
+	mux.HandleFunc("GET /admin/posts/{id}/edit", auth(postHandler.EditForm))
+	mux.HandleFunc("POST /admin/posts/{id}/edit", auth(postHandler.Update))
 	mux.HandleFunc("POST /admin/posts/{id}/delete", auth(postHandler.Delete))
 
 	log.Println("Starting server on :8080")
