@@ -22,6 +22,10 @@ type config struct {
 	DB struct {
 		Path string `toml:"path"`
 	} `toml:"db"`
+	Discord struct {
+		PublicKey      string   `toml:"public_key"`
+		AllowedUserIDs []string `toml:"allowed_user_ids"`
+	} `toml:"discord"`
 }
 
 func main() {
@@ -62,6 +66,18 @@ func main() {
 	mux.HandleFunc("GET /admin/posts/{id}/edit", auth(postHandler.EditForm))
 	mux.HandleFunc("POST /admin/posts/{id}/edit", auth(postHandler.Update))
 	mux.HandleFunc("POST /admin/posts/{id}/delete", auth(postHandler.Delete))
+
+	// Discord 連携は public_key が設定されているときだけ有効になる。
+	if cfg.Discord.PublicKey != "" {
+		discordHandler, err := handler.NewDiscordHandler(postModel, cfg.Discord.PublicKey, cfg.Discord.AllowedUserIDs)
+		if err != nil {
+			log.Fatalf("config.toml: invalid [discord] section: %v", err)
+		}
+		mux.HandleFunc("POST /webhooks/discord", discordHandler.Interactions)
+		log.Println("Discord integration enabled at POST /webhooks/discord")
+	} else {
+		log.Println("Discord integration disabled (config.toml: discord.public_key is empty)")
+	}
 
 	log.Println("Starting server on :8080")
 	if err := http.ListenAndServe(":8080", handler.Logger(handler.SessionCookie(mux))); err != nil {
