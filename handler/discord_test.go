@@ -1,10 +1,12 @@
 package handler_test
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -336,6 +338,72 @@ func TestWebPosts_SourceIsWeb(t *testing.T) {
 		if p.Source != model.SourceWeb {
 			t.Errorf("want source %q, got %q", model.SourceWeb, p.Source)
 		}
+	}
+}
+
+// ---- payload logging -------------------------------------------------------
+
+// captureLogs redirects the default slog logger into a buffer for the duration
+// of the test. Tests using it must not call t.Parallel() — the default logger
+// is process-global. Go runs sequential tests before resuming parallel ones,
+// so this stays isolated from the rest of the package.
+func captureLogs(t *testing.T) *bytes.Buffer {
+	t.Helper()
+	var buf bytes.Buffer
+	orig := slog.Default()
+	slog.SetDefault(slog.New(slog.NewTextHandler(&buf, nil)))
+	t.Cleanup(func() { slog.SetDefault(orig) })
+	return &buf
+}
+
+func TestVerifiedPayload_Logged(t *testing.T) {
+	logs := captureLogs(t)
+	h, priv, _ := newTestHandler(t)
+
+	post(t, h, priv, messageCommand(allowedUser, "777", "ログに残るはずの本文"))
+
+	got := logs.String()
+	if !strings.Contains(got, "discord: received interaction") {
+		t.Errorf("want interaction log, got:\n%s", got)
+	}
+	// 生ペイロードがそのまま追えること（TextHandler がクォートを escape する）。
+	for _, want := range []string{"target_id", "ログに残るはずの本文", allowedUser} {
+		if !strings.Contains(got, want) {
+			t.Errorf("want payload containing %q, got:\n%s", want, got)
+		}
+	}
+}
+
+func TestUnverifiedPayload_NotLogged(t *testing.T) {
+	// 署名検証を通っていないボディは Discord 由来の保証がないので中身を残さない。
+	logs := captureLogs(t)
+	h, _, _ := newTestHandler(t)
+
+	_, otherKey, _ := ed25519.GenerateKey(nil)
+	post(t, h, otherKey, slashCommand(allowedUser, "ログに残ってはいけない本文"))
+
+	got := logs.String()
+	if strings.Contains(got, "ログに残ってはいけない本文") {
+		t.Errorf("unverified body must not be logged, got:\n%s", got)
+	}
+	if !strings.Contains(got, "invalid signature") {
+		t.Errorf("want rejection log, got:\n%s", got)
+	}
+	// 診断に必要なメタデータは残っていること。
+	if !strings.Contains(got, "body_bytes") {
+		t.Errorf("want body_bytes metadata, got:\n%s", got)
+	}
+}
+
+func TestOversizedPayload_Truncated(t *testing.T) {
+	logs := captureLogs(t)
+	h, priv, _ := newTestHandler(t)
+
+	post(t, h, priv, messageCommand(allowedUser, "777", strings.Repeat("あ", 9000)))
+
+	got := logs.String()
+	if !strings.Contains(got, "truncated") {
+		t.Errorf("want truncation marker for oversized payload, got %d bytes of logs", len(got))
 	}
 }
 

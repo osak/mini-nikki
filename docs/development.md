@@ -117,6 +117,32 @@ Discord は保存時に正しい署名と不正な署名の両方でリクエス
 Installation（または OAuth2 > URL Generator）で `applications.commands` スコープを含む
 インストール URL を生成し、使うサーバー / ユーザーに追加する。
 
+### 受信ペイロードを確認する
+
+署名検証を通過した Interaction は、生の JSON がそのままログに出る。
+
+```
+INFO discord: received interaction payload="{\"id\":\"2\",\"type\":2,...}"
+```
+
+**署名検証に失敗したリクエストのボディは記録しない。** Discord 由来である保証がなく、
+ログ汚染や肥大化の的になるため、メタデータのみ残す。
+
+```
+WARN discord: rejected request with invalid signature remote_addr=::1 body_bytes=56 has_signature=true has_timestamp=true
+```
+
+整形して読むには：
+
+```bash
+docker compose logs mini-nikki | grep 'received interaction' | sed 's/.*payload=//' | python3 -c 'import sys,json;[print(json.dumps(json.loads(json.loads(l)),ensure_ascii=False,indent=2)) for l in sys.stdin]'
+```
+
+ペイロードには Interaction の `token`（フォローアップメッセージ送信に使える、有効期限 15 分の
+credential）が含まれる点に注意。ログの取り扱いが気になる場合はこのフィールドをマスクする。
+
+8KB を超えるペイロードは切り詰められ、末尾に `...(truncated, N bytes total)` が付く。
+
 ### トラブルシューティング
 
 | 症状 | 原因 |
@@ -124,6 +150,7 @@ Installation（または OAuth2 > URL Generator）で `applications.commands` �
 | Endpoint URL の保存に失敗する | 署名検証が通っていない。`public_key` の値、リバースプロキシがボディを書き換えていないかを確認 |
 | 「アプリケーションが応答しませんでした」 | 3 秒以内に応答できていない。サーバーログを確認 |
 | `この操作を実行する権限がありません。` | 実行者の ID が `allowed_user_ids` にない |
+| コマンドは通るのに記事にならない | `discord: received interaction` のペイロードと、直後の `WARN` 行を確認 |
 
 ## マイグレーション
 

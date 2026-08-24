@@ -43,6 +43,10 @@ const bodyOptionName = "body"
 // Discord のメッセージは添付を含めても数十 KB に収まる。
 const maxInteractionBody = 1 << 20
 
+// maxLoggedPayload は 1 リクエストあたりログに残すペイロードの上限。
+// 実際の Interaction は数 KB なので、通常は切り詰められない。
+const maxLoggedPayload = 8 << 10
+
 // DiscordHandler は Discord アプリの Interactions Endpoint を提供する。
 //
 // Discord にはチャンネルの投稿を外部 URL へ push する送信 Webhook がないため、
@@ -83,6 +87,8 @@ func NewDiscordHandler(m *model.PostModel, publicKeyHex string, allowedUserIDs [
 func (h *DiscordHandler) Interactions(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(http.MaxBytesReader(w, r.Body, maxInteractionBody))
 	if err != nil {
+		slog.WarnContext(r.Context(), "discord: failed to read request body",
+			"err", err, "remote_addr", ClientIP(r))
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -90,12 +96,24 @@ func (h *DiscordHandler) Interactions(w http.ResponseWriter, r *http.Request) {
 	// Discord は Endpoint URL 登録時に不正な署名のリクエストを送り、
 	// 401 が返ることを確認する。ここで 401 以外を返すと登録に失敗する。
 	if !h.verifySignature(r, body) {
+		// 検証を通っていないボディは Discord 由来である保証がない。
+		// ログ汚染・肥大化の的になるので中身は残さず、メタデータだけ記録する。
+		slog.WarnContext(r.Context(), "discord: rejected request with invalid signature",
+			"remote_addr", ClientIP(r),
+			"body_bytes", len(body),
+			"has_signature", r.Header.Get("X-Signature-Ed25519") != "",
+			"has_timestamp", r.Header.Get("X-Signature-Timestamp") != "")
 		http.Error(w, "invalid request signature", http.StatusUnauthorized)
 		return
 	}
 
+	// ここから先は Discord が署名したペイロードであることが保証されている。
+	// 想定外の形が飛んできたときに後から確認できるよう、生のまま記録しておく。
+	slog.InfoContext(r.Context(), "discord: received interaction", "payload", loggablePayload(body))
+
 	var it discordInteraction
 	if err := json.Unmarshal(body, &it); err != nil {
+		slog.ErrorContext(r.Context(), "discord: failed to parse interaction", "err", err)
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
@@ -106,8 +124,17 @@ func (h *DiscordHandler) Interactions(w http.ResponseWriter, r *http.Request) {
 	case interactionApplicationCommand:
 		h.handleCommand(w, r, &it)
 	default:
+		slog.WarnContext(r.Context(), "discord: unsupported interaction type", "type", it.Type)
 		writeInteraction(w, r, ephemeralReply("対応していない操作です。"))
 	}
+}
+
+// loggablePayload はログ 1 行が肥大化しないようペイロードを切り詰める。
+func loggablePayload(body []byte) string {
+	if len(body) <= maxLoggedPayload {
+		return string(body)
+	}
+	return fmt.Sprintf("%s...(truncated, %d bytes total)", body[:maxLoggedPayload], len(body))
 }
 
 // verifySignature は X-Signature-Ed25519 ヘッダを検証する。
@@ -141,6 +168,8 @@ func (h *DiscordHandler) handleCommand(w http.ResponseWriter, r *http.Request, i
 
 	body, messageID, err := it.postBody()
 	if err != nil {
+		slog.WarnContext(r.Context(), "discord: could not extract post body",
+			"err", err, "user_id", userID, "command", it.Data.Name, "command_type", it.Data.Type)
 		writeInteraction(w, r, ephemeralReply(err.Error()))
 		return
 	}
@@ -148,6 +177,8 @@ func (h *DiscordHandler) handleCommand(w http.ResponseWriter, r *http.Request, i
 	id, err := h.model.CreateFromDiscord(r.Context(), body, messageID)
 	switch {
 	case errors.Is(err, model.ErrDuplicatePost):
+		slog.InfoContext(r.Context(), "discord: skipped duplicate post",
+			"user_id", userID, "message_id", messageID)
 		writeInteraction(w, r, ephemeralReply("このメッセージは既に投稿済みです。"))
 		return
 	case err != nil:

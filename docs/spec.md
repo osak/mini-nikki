@@ -169,6 +169,14 @@ Discord から HTTP で通知を受け取る公式の手段は **Interactions En
 エラー時も HTTP 200 + ephemeral メッセージで返す。HTTP エラーを返すと Discord 上は
 「アプリケーションが応答しませんでした」としか表示されず、実行者が原因を知る手立てがなくなるため。
 
+### ログ
+
+署名検証を通過した Interaction は生の JSON をそのまま `INFO discord: received interaction`
+として記録する（8KB 超は切り詰め）。想定外のペイロードが来たときに後から追えるようにするため。
+
+署名検証に失敗したリクエストのボディは記録しない。Discord 由来である保証がないため、
+`remote_addr` / `body_bytes` / ヘッダの有無といったメタデータのみ残す。
+
 ### 管理画面での表示
 
 Discord 由来の記事には管理画面の投稿一覧に `Discord` バッジが付く。編集・削除は web 投稿と同じ。
