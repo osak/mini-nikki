@@ -279,6 +279,14 @@ main {
     color: #c0392b;
 }
 
+.post-source {
+    font-size: 0.7rem;
+    color: #5865f2;
+    border: 1px solid #c7cbf5;
+    border-radius: 10px;
+    padding: 1px 8px;
+}
+
 .btn-permalink {
     background: none;
     border: none;

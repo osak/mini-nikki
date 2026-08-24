@@ -5,3 +5,11 @@ password = "changeme"
 [db]
 # compose で動かす場合は /data/mini-nikki.db を推奨
 path = "mini-nikki.db"
+
+# Discord 連携（任意）。public_key が空なら無効。
+[discord]
+# Developer Portal > General Information > Public Key
+public_key = ""
+# 投稿を許可する Discord ユーザー ID（開発者モードでユーザーを右クリック > ID をコピー）。
+# 記事は公開されるため、public_key を設定する場合は必ず 1 件以上指定すること。
+allowed_user_ids = []

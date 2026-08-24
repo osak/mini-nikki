@@ -15,6 +15,7 @@
 | マイグレーション | `golang-migrate/migrate` v4 |
 | Markdown | `yuin/goldmark`（ハードラップ有効） |
 | 設定ファイル | `BurntSushi/toml` |
+| Discord 署名検証 | `crypto/ed25519`（標準ライブラリ） |
 | 静的ファイル | `embed.FS` でバイナリ埋め込み |
 | ホットリロード | `air`（開発時のみ） |
 | タスクランナー | Just |
@@ -32,10 +33,13 @@
 │   ├── db.go                        # DB 接続・マイグレーション実行
 │   └── migrations/
 │       ├── 001_create_posts.{up,down}.sql
-│       └── 002_create_likes.{up,down}.sql
+│       ├── 002_create_likes.{up,down}.sql
+│       └── 003_add_post_source.{up,down}.sql
 ├── handler/
-│   ├── post.go                      # 投稿一覧・月別・管理・作成・削除
+│   ├── post.go                      # 投稿一覧・月別・管理・作成・編集・削除
 │   ├── like.go                      # Like API
+│   ├── feed.go                      # RSS / Atom フィード
+│   ├── discord.go                   # Discord Interactions エンドポイント
 │   └── middleware.go                # Logger / BasicAuth / SessionCookie / ClientIP
 ├── model/
 │   ├── post.go                      # Post 構造体・DB アクセス
@@ -47,6 +51,7 @@
 │   ├── index.templ                  # 投稿一覧ページ
 │   ├── month.templ                  # 月別アーカイブページ
 │   ├── admin.templ                  # 管理画面
+│   ├── edit.templ                   # 投稿編集ページ
 │   ├── helpers.go                   # テンプレートヘルパー関数
 │   └── components/
 │       ├── post_card.templ          # 投稿カード
@@ -75,6 +80,18 @@ SQLiteには日付型が存在せず、タイムゾーンの管理もできな�
 
 ### IP アドレスの取得
 本番環境では Caddy がリバースプロキシとなるため、`X-Forwarded-For` ヘッダを優先して参照する（`handler.ClientIP`）。
+
+### Discord 連携は Interactions Endpoint で受ける
+Discord には「チャンネルの投稿を外部 URL へ push する送信 Webhook」が存在しない。Discord から HTTP でイベントを受け取る公式の手段は Interactions Endpoint URL のみであり、これを `POST /webhooks/discord` として実装した。
+
+Gateway（WebSocket）への常時接続なら「チャンネルに書くだけで記事になる」体験が作れるが、常駐接続と再接続・レート制御の管理が必要になり、SSR の HTTP サーバー 1 プロセスという構成が崩れる。日記の投稿頻度を考えると、実行者が明示的にコマンドを起動する Interactions のほうが釣り合いが取れていると判断した。
+
+署名検証は標準ライブラリの `crypto/ed25519` で行うため、Discord 連携のための外部依存は増えていない。
+
+### Discord 由来の投稿の識別
+`posts.source`（`web` / `discord`）と `posts.discord_message_id` で由来を保持する。`discord_message_id` の部分 UNIQUE インデックスがメッセージコマンドの二度押しや再送に対する冪等性を担保する。web 投稿では NULL になり、SQLite の UNIQUE インデックスは NULL を重複とみなさないため制約に触れない。
+
+UNIQUE 制約違反の判定（`model.isUniqueViolation`）はエラーメッセージの文字列一致で行っている。`modernc.org/sqlite` がドライバ固有のエラー型を公開していないため。
 
 ### セッション Cookie
 初訪問時に `SessionCookie` ミドルウェアが `nikki_sid` Cookie（16 バイト乱数の hex 文字列、有効期限 1 年、HttpOnly, SameSite=Lax）を発行し、リクエストコンテキストに格納する。
