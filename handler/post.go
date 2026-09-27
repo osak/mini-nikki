@@ -13,10 +13,19 @@ import (
 type PostHandler struct {
 	model     *model.PostModel
 	likeModel *model.LikeModel
+	previews  *LinkPreviews
 }
 
-func NewPostHandler(m *model.PostModel, lm *model.LikeModel) *PostHandler {
-	return &PostHandler{model: m, likeModel: lm}
+func NewPostHandler(m *model.PostModel, lm *model.LikeModel, lp *LinkPreviews) *PostHandler {
+	return &PostHandler{model: m, likeModel: lm, previews: lp}
+}
+
+// enrich は表示用に Like 数とリンクカードの情報を投稿に付ける。
+func (h *PostHandler) enrich(r *http.Request, posts []model.Post) error {
+	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
+		return err
+	}
+	return h.previews.Attach(r.Context(), posts)
 }
 
 func internalError(w http.ResponseWriter, r *http.Request, err error) {
@@ -30,7 +39,7 @@ func (h *PostHandler) Index(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
-	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
+	if err := h.enrich(r, posts); err != nil {
 		internalError(w, r, err)
 		return
 	}
@@ -54,7 +63,7 @@ func (h *PostHandler) Month(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
-	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
+	if err := h.enrich(r, posts); err != nil {
 		internalError(w, r, err)
 		return
 	}
@@ -67,7 +76,7 @@ func (h *PostHandler) Admin(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
-	if err := h.likeModel.EnrichPosts(r.Context(), posts, ClientIP(r), SessionID(r)); err != nil {
+	if err := h.enrich(r, posts); err != nil {
 		internalError(w, r, err)
 		return
 	}
@@ -87,6 +96,7 @@ func (h *PostHandler) Create(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
+	h.previews.Enqueue(body, false)
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
@@ -131,6 +141,8 @@ func (h *PostHandler) Update(w http.ResponseWriter, r *http.Request) {
 		internalError(w, r, err)
 		return
 	}
+	// 編集時はリンク先の内容が変わっている可能性があるので取り直す。
+	h.previews.Enqueue(body, true)
 
 	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }

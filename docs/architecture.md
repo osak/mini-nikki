@@ -34,18 +34,29 @@
 │   └── migrations/
 │       ├── 001_create_posts.{up,down}.sql
 │       ├── 002_create_likes.{up,down}.sql
-│       └── 003_add_post_source.{up,down}.sql
+│       ├── 003_add_post_source.{up,down}.sql
+│       └── 004_create_link_previews.{up,down}.sql
 ├── handler/
 │   ├── post.go                      # 投稿一覧・月別・管理・作成・編集・削除
 │   ├── like.go                      # Like API
 │   ├── feed.go                      # RSS / Atom フィード
 │   ├── discord.go                   # Discord Interactions エンドポイント
+│   ├── link_preview.go              # リンクカードの OGP 読み出し・取得依頼
 │   └── middleware.go                # Logger / BasicAuth / SessionCookie / ClientIP
 ├── model/
 │   ├── post.go                      # Post 構造体・DB アクセス
-│   └── like.go                      # LikeModel・レートリミットロジック
+│   ├── like.go                      # LikeModel・レートリミットロジック
+│   └── link_preview.go              # LinkPreviewModel（OGP キャッシュ）
 ├── internal/
-│   └── markdown/markdown.go         # goldmark ラッパー
+│   ├── markdown/
+│   │   ├── markdown.go              # goldmark ラッパー
+│   │   ├── linkify.go               # 和文に続く URL のリンク化
+│   │   ├── embed.go                 # @[card] / @[embed] 記法
+│   │   ├── embed.templ              # カード・埋め込みのマークアップ
+│   │   └── providers.go             # 埋め込み対応サイト（YouTube / X）
+│   └── linkpreview/
+│       ├── fetch.go                 # OGP 取得
+│       └── worker.go                # バックグラウンド取得ワーカー
 ├── templates/
 │   ├── layout.templ                 # 共通レイアウト
 │   ├── index.templ                  # 投稿一覧ページ
@@ -95,6 +106,16 @@ UNIQUE 制約違反の判定（`model.isUniqueViolation`）はエラーメッセ
 
 ### 和文に続く URL のリンク化
 goldmark の Linkify 拡張は URL の直前が空白か `*_~(` のときにしか発火しない。さらに goldmark はインラインパーサを行頭・空白・ASCII 記号の位置でしか呼び出さないため、トリガー文字を増やしても和文の直後では呼ばれない。そこで `internal/markdown/linkify.go` で AST Transformer を追加し、パース後のテキストノードから「非 ASCII 文字の直後の URL」を探して AutoLink に置き換えている。URL の終端判定は Linkify のパーサに委譲し、挙動を本家と揃えている。
+
+### リンクカードの OGP は保存時に取得してキャッシュする
+表示時に外部サイトへ取りに行くと、ページの表示速度が外部サイトの応答に律速される。また Discord Interactions は 3 秒以内に応答する必要があるため、投稿処理の中でも取得できない。そこで取得は `linkpreview.Worker`（goroutine 1 本）が行い、結果を `link_previews` テーブルにキャッシュする。ハンドラはキャッシュを読むことと、取得依頼をキューに積むことしかしない。キャッシュが無いカードは URL だけのフォールバック表示にする。
+
+取得依頼は投稿の作成・編集時に加えて、表示時にキャッシュが無い URL についても積む。これで既存投稿のバックフィルや失敗した URL の再試行のための仕組みを別に持たずに済む。キューが溢れた依頼は捨てるが、次の表示時に積み直される。
+
+OGP の取得先はサーバーから内部ネットワークを叩けないよう、接続先がループバック・プライベートアドレスなら拒否する（投稿者は管理者だけだが、念のため）。
+
+### 埋め込みは許可リスト方式で自前生成する
+oEmbed の `html` をそのまま差し込むと、外部サイト由来の HTML がページに入り XSS の余地が生まれる。投稿者が管理者だけでも HTML の出どころは外部サイトなので、対応サイトを許可リストで持ち、URL から ID を取り出してマークアップを自前で組み立てる。対応していないサイトはリンクカードにフォールバックする。
 
 ### セッション Cookie
 初訪問時に `SessionCookie` ミドルウェアが `nikki_sid` Cookie（16 バイト乱数の hex 文字列、有効期限 1 年、HttpOnly, SameSite=Lax）を発行し、リクエストコンテキストに格納する。
