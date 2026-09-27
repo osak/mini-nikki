@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"bytes"
+	"regexp"
 	"unicode/utf8"
 
 	"github.com/yuin/goldmark"
@@ -24,11 +25,22 @@ import (
 // そこで URL は終わる。
 type cjkLinkify struct{}
 
+// neverMatch はどの文字列にもマッチしない正規表現。
+var neverMatch = regexp.MustCompile(`[^\x00-\x{10FFFF}]`)
+
+// linkifyOptions は Linkify のオプション。
+//
+// `www.` で始まる文字列はリンクにしない（`http://` / `https://` で始まるものだけを対象にする）。
+// Linkify には www. の判定を無効にするオプションが無いので、何にもマッチしない正規表現を渡す。
+var linkifyOptions = []extension.LinkifyOption{
+	extension.WithLinkifyWWWRegexp(neverMatch),
+}
+
 func (cjkLinkify) Extend(m goldmark.Markdown) {
 	m.Parser().AddOptions(
 		parser.WithASTTransformers(
 			// Linkify 本体の処理が済んだ後に走ればよいので優先度は低めにする。
-			util.Prioritized(&cjkLinkifyTransformer{linkify: extension.NewLinkifyParser()}, 999),
+			util.Prioritized(&cjkLinkifyTransformer{linkify: extension.NewLinkifyParser(linkifyOptions...)}, 999),
 		),
 	)
 }

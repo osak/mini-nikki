@@ -52,6 +52,21 @@ func TestToHTMLLinkify(t *testing.T) {
 			want: `<p>見て<a href="https://example.com/foo">https://example.com/foo</a>.</p>`,
 		},
 		{
+			name: "www. はリンクにしない",
+			src:  "see www.example.com",
+			want: `<p>see www.example.com</p>`,
+		},
+		{
+			name: "行頭の www. もリンクにしない",
+			src:  "www.example.com/foo",
+			want: `<p>www.example.com/foo</p>`,
+		},
+		{
+			name: "http:// 付きの www はリンクにする",
+			src:  "see http://www.example.com",
+			want: `<p>see <a href="http://www.example.com">http://www.example.com</a></p>`,
+		},
+		{
 			name: "和文の直後の www. はリンクにしない",
 			src:  "（www.example.com）",
 			want: `<p>（www.example.com）</p>`,

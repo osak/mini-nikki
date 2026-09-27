@@ -12,7 +12,7 @@ import (
 var md = goldmark.New(
 	goldmark.WithExtensions(
 		// 本文中の bare URL をリンクにする。
-		extension.Linkify,
+		extension.NewLinkify(linkifyOptions...),
 		cjkLinkify{},
 	),
 	goldmark.WithRendererOptions(
