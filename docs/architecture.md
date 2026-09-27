@@ -89,6 +89,8 @@ SQLiteには日付型が存在せず、タイムゾーンの管理もできな�
 ### SQLite ドライバ
 `modernc.org/sqlite`（Pure Go）を使用。CGO 不要なのでクロスコンパイルが容易で、`scratch` ベースの Docker イメージにそのまま収まる。
 
+`scratch` イメージには CA 証明書が含まれないため、ビルドステージの `/etc/ssl/certs/ca-certificates.crt` を最終イメージにコピーしている。これが無いと、リンクカードの OGP 取得で外部サイトへの HTTPS 接続が `x509: certificate signed by unknown authority` で失敗する。
+
 ### IP アドレスの取得
 本番環境では Caddy がリバースプロキシとなるため、`X-Forwarded-For` ヘッダを優先して参照する（`handler.ClientIP`）。
 
