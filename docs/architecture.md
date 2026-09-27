@@ -13,7 +13,7 @@
 | ルーター | `net/http` 標準ライブラリ（`http.ServeMux`） |
 | DB | SQLite — `modernc.org/sqlite`（CGO 不要） |
 | マイグレーション | `golang-migrate/migrate` v4 |
-| Markdown | `yuin/goldmark`（ハードラップ有効） |
+| Markdown | `yuin/goldmark`（ハードラップ・Linkify 有効） |
 | 設定ファイル | `BurntSushi/toml` |
 | Discord 署名検証 | `crypto/ed25519`（標準ライブラリ） |
 | 静的ファイル | `embed.FS` でバイナリ埋め込み |
@@ -92,6 +92,9 @@ Gateway（WebSocket）への常時接続なら「チャンネルに書くだけ�
 `posts.source`（`web` / `discord`）と `posts.discord_message_id` で由来を保持する。`discord_message_id` の部分 UNIQUE インデックスがメッセージコマンドの二度押しや再送に対する冪等性を担保する。web 投稿では NULL になり、SQLite の UNIQUE インデックスは NULL を重複とみなさないため制約に触れない。
 
 UNIQUE 制約違反の判定（`model.isUniqueViolation`）はエラーメッセージの文字列一致で行っている。`modernc.org/sqlite` がドライバ固有のエラー型を公開していないため。
+
+### 和文に続く URL のリンク化
+goldmark の Linkify 拡張は URL の直前が空白か `*_~(` のときにしか発火しない。さらに goldmark はインラインパーサを行頭・空白・ASCII 記号の位置でしか呼び出さないため、トリガー文字を増やしても和文の直後では呼ばれない。そこで `internal/markdown/linkify.go` で AST Transformer を追加し、パース後のテキストノードから「非 ASCII 文字の直後の URL」を探して AutoLink に置き換えている。URL の終端判定は Linkify のパーサに委譲し、挙動を本家と揃えている。
 
 ### セッション Cookie
 初訪問時に `SessionCookie` ミドルウェアが `nikki_sid` Cookie（16 バイト乱数の hex 文字列、有効期限 1 年、HttpOnly, SameSite=Lax）を発行し、リクエストコンテキストに格納する。

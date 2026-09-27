@@ -5,10 +5,16 @@ import (
 	"html"
 
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
 	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 var md = goldmark.New(
+	goldmark.WithExtensions(
+		// 本文中の bare URL をリンクにする。
+		extension.NewLinkify(linkifyOptions...),
+		cjkLinkify{},
+	),
 	goldmark.WithRendererOptions(
 		goldmarkhtml.WithHardWraps(),
 	),
