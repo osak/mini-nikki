@@ -6,6 +6,8 @@ import (
 	"errors"
 	"strings"
 	"time"
+
+	"github.com/osak/mini-nikki/internal/linkpreview"
 )
 
 // jst は UTC+9 固定。time.LoadLocation を避けることで tzdata 依存をなくす。
@@ -31,6 +33,9 @@ type Post struct {
 	// DiscordMessageID は Discord のメッセージから作られた投稿のみ設定される。
 	// スラッシュコマンド経由の投稿や web 投稿では空文字列。
 	DiscordMessageID string
+	// LinkPreviews は本文中のリンクカードに使う取得済みの OGP。キーは URL。
+	// 表示時にハンドラが設定する。同じページの投稿間で同じ map を共有してよい。
+	LinkPreviews map[string]linkpreview.Preview
 }
 
 type PostGroup struct {

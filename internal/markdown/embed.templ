@@ -1,0 +1,51 @@
+package markdown
+
+// 埋め込み記法（@[card] / @[embed]）の描画に使うコンポーネント。
+// どれを使うかは embed.go の linkEmbedView が決める。
+
+// linkCard は OGP のリンクカード。c.Fallback のときは URL とドメインだけを出す。
+templ linkCard(c card) {
+	<div class={ "link-card", templ.KV("link-card-fallback", c.Fallback) } data-url={ c.URL }>
+		<a href={ templ.URL(c.URL) } target="_blank" rel="noopener noreferrer">
+			<span class="link-card-body">
+				<span class="link-card-title">{ c.Title }</span>
+				if c.Description != "" {
+					<span class="link-card-description">{ c.Description }</span>
+				}
+				<span class="link-card-site">{ c.SiteName }</span>
+			</span>
+			if c.ImageURL != "" {
+				<img class="link-card-image" src={ c.ImageURL } alt="" loading="lazy" referrerpolicy="no-referrer"/>
+			}
+		</a>
+	</div>
+}
+
+// youTubeEmbed は YouTube のプレーヤー。プライバシー強化モード（youtube-nocookie.com）を使う。
+templ youTubeEmbed(videoID string) {
+	<div class="link-embed link-embed-youtube">
+		<iframe
+			src={ "https://www.youtube-nocookie.com/embed/" + videoID }
+			title="YouTube 動画"
+			loading="lazy"
+			allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+			referrerpolicy="strict-origin-when-cross-origin"
+			allowfullscreen
+		></iframe>
+	</div>
+}
+
+// tweetEmbed は X（Twitter）のポスト。widgets.js が blockquote を埋め込みに置き換える。
+// widgets.js を読み込めなくてもリンクとして読める。
+templ tweetEmbed(user, id, rawURL string) {
+	<div class="link-embed link-embed-x">
+		<blockquote class="twitter-tweet" data-dnt="true">
+			<a href={ templ.URL("https://twitter.com/" + user + "/status/" + id) }>{ rawURL }</a>
+		</blockquote>
+	</div>
+}
+
+// feedLink はフィード向けの表示。フィードリーダーでは iframe やスクリプトが動かないので、ただのリンクにする。
+templ feedLink(rawURL, label string) {
+	<p><a href={ templ.URL(rawURL) }>{ label }</a></p>
+}

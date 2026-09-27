@@ -36,3 +36,13 @@ async function toggleLike(btn) {
     btn.dataset.liked = 'true';
   }
 }
+
+// X（Twitter）の埋め込みがあるページでだけ公式ウィジェットを読み込む。
+document.addEventListener('DOMContentLoaded', function() {
+  if (!document.querySelector('.link-embed-x .twitter-tweet')) return;
+  var s = document.createElement('script');
+  s.src = 'https://platform.twitter.com/widgets.js';
+  s.async = true;
+  s.charset = 'utf-8';
+  document.body.appendChild(s);
+});

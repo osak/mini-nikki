@@ -55,6 +55,7 @@ type DiscordHandler struct {
 	model        *model.PostModel
 	publicKey    ed25519.PublicKey
 	allowedUsers map[string]struct{}
+	previews     *LinkPreviews
 }
 
 // NewDiscordHandler は Developer Portal の Public Key（hex）と投稿を許可する
@@ -187,9 +188,17 @@ func (h *DiscordHandler) handleCommand(w http.ResponseWriter, r *http.Request, i
 		return
 	}
 
+	h.previews.Enqueue(body, false)
+
 	slog.InfoContext(r.Context(), "discord: created post",
 		"post_id", id, "user_id", userID, "message_id", messageID)
 	writeInteraction(w, r, ephemeralReply(fmt.Sprintf("投稿しました（#%d）", id)))
+}
+
+// SetLinkPreviews は投稿作成時にリンクカードの取得を依頼する先を設定する。
+// 設定しない場合は取得を依頼しない（表示時に依頼される）。
+func (h *DiscordHandler) SetLinkPreviews(lp *LinkPreviews) {
+	h.previews = lp
 }
 
 // ---- Interaction ペイロード -------------------------------------------------

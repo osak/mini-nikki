@@ -16,11 +16,30 @@ const siteTitle = "ミニ日記（ゴママヨ）"
 
 // FeedHandler serves RSS 2.0 and Atom 1.0 feeds.
 type FeedHandler struct {
-	model *model.PostModel
+	model    *model.PostModel
+	previews *LinkPreviews
 }
 
-func NewFeedHandler(m *model.PostModel) *FeedHandler {
-	return &FeedHandler{model: m}
+func NewFeedHandler(m *model.PostModel, lp *LinkPreviews) *FeedHandler {
+	return &FeedHandler{model: m, previews: lp}
+}
+
+// listPosts はフィードに載せる投稿をリンクカードの情報付きで返す。
+func (h *FeedHandler) listPosts(r *http.Request) ([]model.Post, error) {
+	posts, err := h.model.List(r.Context())
+	if err != nil {
+		return nil, err
+	}
+	if err := h.previews.Attach(r.Context(), posts); err != nil {
+		return nil, err
+	}
+	return posts, nil
+}
+
+// feedContentHTML はフィード向けに本文を描画する。
+// フィードリーダーでは iframe やスクリプトが動かないので、カードや埋め込みはリンクにする。
+func feedContentHTML(p model.Post) string {
+	return markdown.ToHTML(p.Body, markdown.Options{Previews: p.LinkPreviews, Plain: true})
 }
 
 // feedBaseURL derives the site base URL from the request.
@@ -116,7 +135,7 @@ type rssGUID struct {
 }
 
 func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
-	posts, err := h.model.List(r.Context())
+	posts, err := h.listPosts(r)
 	if err != nil {
 		internalError(w, r, err)
 		return
@@ -131,7 +150,7 @@ func (h *FeedHandler) RSS(w http.ResponseWriter, r *http.Request) {
 			Link:        link,
 			GUID:        rssGUID{IsPermaLink: true, Value: link},
 			PubDate:     p.CreatedAt.Format(time.RFC1123Z),
-			Description: markdown.ToHTML(p.Body),
+			Description: feedContentHTML(p),
 		}
 	}
 
@@ -186,7 +205,7 @@ type atomContent struct {
 }
 
 func (h *FeedHandler) Atom(w http.ResponseWriter, r *http.Request) {
-	posts, err := h.model.List(r.Context())
+	posts, err := h.listPosts(r)
 	if err != nil {
 		internalError(w, r, err)
 		return
@@ -203,7 +222,7 @@ func (h *FeedHandler) Atom(w http.ResponseWriter, r *http.Request) {
 			Link:    atomLink{Href: link},
 			ID:      link,
 			Updated: p.CreatedAt.Format(time.RFC3339),
-			Content: atomContent{Type: "html", Value: markdown.ToHTML(p.Body)},
+			Content: atomContent{Type: "html", Value: feedContentHTML(p)},
 		}
 	}
 

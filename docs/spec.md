@@ -41,6 +41,23 @@ CREATE UNIQUE INDEX posts_discord_message_id
 `discord_message_id` はメッセージコマンド由来の投稿にのみ入り、スラッシュコマンド
 由来（元メッセージが存在しない）と web 投稿では NULL。
 
+### link_previews テーブル
+
+```sql
+CREATE TABLE link_previews (
+    url          TEXT    PRIMARY KEY,
+    status       TEXT    NOT NULL,          -- 'ok' | 'failed'
+    title        TEXT    NOT NULL DEFAULT '',
+    description  TEXT    NOT NULL DEFAULT '',
+    image_url    TEXT    NOT NULL DEFAULT '',
+    site_name    TEXT    NOT NULL DEFAULT '',
+    fetched_at   INTEGER NOT NULL
+);
+```
+
+リンクカードの OGP キャッシュ。投稿ではなく URL をキーにしているので、同じ URL を複数の投稿で共有する。
+`fetched_at` は最後に取得（または取得に失敗）した Unix 秒。
+
 ### likes テーブル
 
 ```sql
@@ -120,6 +137,34 @@ Cookie は初訪問時にサーバーが自動発行（`nikki_sid`、有効期�
   - 和文の直後に空白なしで置いた URL（`（https://example.com）`、`見てhttps://example.com`）もリンクにする。
   - URL は ASCII 文字の範囲で終わるので、直後の全角括弧や和文はリンクに含まれない。末尾の `.` `,` なども含まない。
   - 英字の直後（`xhttps://...`）やインラインコード・既存のリンクの中はリンクにしない。
+
+### リンクカード・埋め込み
+行単独で次の記法を書くと、リンクをカードや埋め込みとして表示する。本文中の bare URL はただのリンクのまま。
+
+```
+@[card](https://example.com/article)
+@[embed](https://www.youtube.com/watch?v=xxxxxxxxxxx)
+```
+
+| 記法 | 表示 |
+|---|---|
+| `@[card](url)` | OGP（タイトル・説明・画像・サイト名）のリンクカード |
+| `@[embed](url)` | 対応サイトは埋め込みプレーヤー。それ以外はリンクカード |
+
+- 行単独（前後の空白は可）の場合だけ認識する。文中やコードブロック内では通常のテキストになる。
+  段落の途中の行でもよい（前後の行は別の段落になる）。
+- URL は `http://` / `https://` のみ。
+- 埋め込みに対応しているサイト:
+  - YouTube（`youtube.com/watch?v=`、`youtu.be/`、`youtube.com/shorts/`、`youtube.com/embed/`）→ `youtube-nocookie.com` の iframe
+  - X / Twitter（`x.com/USER/status/ID`、`twitter.com/USER/status/ID`）→ 公式 `widgets.js` による埋め込み
+- OGP は表示時には取得しない。取得はバックグラウンドで行い、`link_previews` テーブルにキャッシュする。
+  - 投稿の作成時（管理画面・Discord）に取得を依頼する。
+  - 投稿の編集時は、キャッシュ済みでもその投稿の URL を取り直す。
+  - 表示時にキャッシュが無い URL も取得を依頼する（既存投稿のバックフィルと、失敗した URL の再試行を兼ねる）。
+  - 取得に失敗した URL は 24 時間経つまで再試行しない。以前に成功していれば、その結果を表示し続ける。
+- キャッシュが無い（未取得・取得失敗）カードは、URL とドメインだけのフォールバック表示になる。
+- OGP 画像は元サイトに直接リンクする（`referrerpolicy="no-referrer"`）。
+- RSS / Atom フィードでは、カードも埋め込みもタイトル（無ければ URL）のリンクとして出力する。
 
 ### バリデーション
 - 本文が空 → エラーメッセージ表示。

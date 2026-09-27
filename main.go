@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/osak/mini-nikki/db"
 	"github.com/osak/mini-nikki/handler"
+	"github.com/osak/mini-nikki/internal/linkpreview"
 	"github.com/osak/mini-nikki/model"
 )
 
@@ -49,9 +51,16 @@ func main() {
 
 	postModel := model.NewPostModel(database)
 	likeModel := model.NewLikeModel(database)
-	postHandler := handler.NewPostHandler(postModel, likeModel)
+
+	// リンクカードの OGP はバックグラウンドで取得して DB にキャッシュする。
+	previewModel := model.NewLinkPreviewModel(database)
+	previewWorker := linkpreview.NewWorker(previewModel, linkpreview.NewFetcher())
+	go previewWorker.Run(context.Background())
+	linkPreviews := handler.NewLinkPreviews(previewModel, previewWorker)
+
+	postHandler := handler.NewPostHandler(postModel, likeModel, linkPreviews)
 	likeHandler := handler.NewLikeHandler(likeModel)
-	feedHandler := handler.NewFeedHandler(postModel)
+	feedHandler := handler.NewFeedHandler(postModel, linkPreviews)
 	auth := handler.BasicAuth(cfg.Admin.User, cfg.Admin.Password)
 
 	mux := http.NewServeMux()
@@ -73,6 +82,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("config.toml: invalid [discord] section: %v", err)
 		}
+		discordHandler.SetLinkPreviews(linkPreviews)
 		mux.HandleFunc("POST /webhooks/discord", discordHandler.Interactions)
 		log.Println("Discord integration enabled at POST /webhooks/discord")
 	} else {

@@ -119,7 +119,7 @@ func TestToHTMLLinkify(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := strings.TrimSpace(ToHTML(tt.src))
+			got := strings.TrimSpace(ToHTML(tt.src, Options{}))
 			if got != tt.want {
 				t.Errorf("ToHTML(%q)\n got: %s\nwant: %s", tt.src, got, tt.want)
 			}
