@@ -52,9 +52,9 @@ func TestToHTMLLinkify(t *testing.T) {
 			want: `<p>見て<a href="https://example.com/foo">https://example.com/foo</a>.</p>`,
 		},
 		{
-			name: "和文の直後の www",
+			name: "和文の直後の www. はリンクにしない",
 			src:  "（www.example.com）",
-			want: `<p>（<a href="http://www.example.com">www.example.com</a>）</p>`,
+			want: `<p>（www.example.com）</p>`,
 		},
 		{
 			name: "和文の直後の http 以外の h は通常のテキスト",

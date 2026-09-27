@@ -37,25 +37,13 @@ type cjkLinkifyTransformer struct {
 	linkify parser.InlineParser
 }
 
-var linkPrefixes = [][]byte{[]byte("http://"), []byte("https://"), []byte("www.")}
+var linkPrefixes = [][]byte{[]byte("http://"), []byte("https://")}
 
 func (t *cjkLinkifyTransformer) Transform(doc *ast.Document, reader text.Reader, pc parser.Context) {
 	source := reader.Source()
 
 	var texts []*ast.Text
-	_ = ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-		if !entering {
-			return ast.WalkContinue, nil
-		}
-		switch n := n.(type) {
-		case *ast.Link, *ast.AutoLink, *ast.Image, *ast.CodeSpan:
-			// リンクの中にリンクは作らない。コード内もそのまま。
-			return ast.WalkSkipChildren, nil
-		case *ast.Text:
-			texts = append(texts, n)
-		}
-		return ast.WalkContinue, nil
-	})
+	collectTexts(doc, &texts)
 
 	for _, n := range texts {
 		// mergeFollowingTexts で前のノードに併合されたものは親から外れている。
@@ -63,6 +51,22 @@ func (t *cjkLinkifyTransformer) Transform(doc *ast.Document, reader text.Reader,
 			continue
 		}
 		t.linkifyText(n, source, pc)
+	}
+}
+
+// collectTexts は n の子孫のうち、リンク化の対象になるテキストノードを texts に集める。
+// 変換中に AST を書き換えるので、先に対象を集めてから処理する。
+func collectTexts(n ast.Node, texts *[]*ast.Text) {
+	for c := n.FirstChild(); c != nil; c = c.NextSibling() {
+		switch c := c.(type) {
+		case *ast.Link, *ast.AutoLink, *ast.Image, *ast.CodeSpan:
+			// リンクの中にリンクは作らない。コード内もそのまま。
+			continue
+		case *ast.Text:
+			*texts = append(*texts, c)
+			continue
+		}
+		collectTexts(c, texts)
 	}
 }
 
